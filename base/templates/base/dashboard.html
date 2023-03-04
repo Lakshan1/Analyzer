@@ -1,0 +1,363 @@
+{% extends 'base/base.html' %}
+{% load static%}
+
+{% block title %}Analyzer | Dashboard{% endblock title %}
+
+{% block head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
+    <style>
+      
+      
+      /* Set the width of the notification container */
+      #success-notification,#fail-notification {
+        max-width: 24rem;
+      }
+
+      /* Set the initial position of the notification container off screen */
+      #success-notification.hidden,#fail-notification.hidden {
+        transform: translateX(100%);
+        right: 0;
+      }
+
+      /* Set the animation for the notification container */
+      #success-notification,#fail-notification {
+        animation: slide-in-right 0.5s ease-out forwards;
+      }
+
+      /* Set the animation for the close button */
+      #close-notification:hover {
+        cursor: pointer;
+        opacity: 0.8;
+      }
+
+      /* Define the slide-in-right animation */
+      @keyframes slide-in-right {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+          right: 0;
+        }
+      }
+
+
+    </style>
+{% endblock head %}
+
+{% block body %}
+
+<div class="w-12/12 h-full ml-0 mr-0 md:mr-16 md:mr-64">
+    <div class="grid grid-cols-5">
+        <div class="col-span-1 bg-gray-800 h-full md:h-screen bg-before-gray-800">
+          <div class="hidden md:block pt-10">
+            <!-- Sidebar with icons for desktop view -->
+            <a href="#" onclick="unhideAccount()" id="account-option" class="block p-4 flex items-center hover:bg-gray-700">
+                <img src="{% static 'images/defaultprofile.jpg' %}" alt="User profile picture" class="w-10 h-10 rounded-full mr-4">
+                <div>
+                  {% if User.first_name == "" %}
+                    <h2 class="text-lg font-semibold text-white">{{User.username}}</h2>
+                  {% else %}
+                    <h2 class="text-lg font-semibold text-white">{{User.first_name}} {{User.last_name}}</h2>
+                  {% endif %}
+                  <p class="text-gray-500">{{user.package.name}}</p>
+                </div>
+            </a>                      
+            <a href="#" onclick="unhideUsage()" id="usage-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-graph-up-arrow mr-6"></i> Usage
+            </a>
+            <a href="#" onclick="unhideApps()" id="tokens-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-app mr-6"></i> Apps
+            </a>
+            <a href="#" onclick="unhideTokens()" id="tokens-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-key mr-6"></i> Tokens
+            </a>
+            <a href="#" onclick="unhideBilling()" id="billing-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-credit-card mr-6"></i>Billing
+            </a>
+          </div>
+          <div class="md:hidden">
+            <!-- Sidebar with icons for mobile view -->
+            <!-- <a href="#" class="block p-4 text-white hover:bg-gray-700">
+               
+            </a> -->
+            <a href="#" onclick="unhideAccount()" class="block p-4 flex items-center hover:bg-gray-700">
+                <img src="{% static 'images/defaultprofile.jpg' %}" alt="User profile picture" class="w-10 h-10 rounded-full mr-4">
+                <div>
+                </div>
+            </a>   
+            <a href="#" onclick="unhideUsage()" id="usage-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-graph-up-arrow mr-6 text-2xl"></i> 
+            </a>
+            <a href="#" onclick="unhideApps()" id="tokens-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-app mr-6 text-2xl"></i>
+            </a>
+            <a href="#" onclick="unhideTokens()" id="tokens-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-key mr-6 text-2xl"></i> 
+              </a>
+            <a href="#" onclick="unhideBilling()" id="billing-option" class="block p-4 text-white hover:bg-gray-700">
+                <i class="bi bi-credit-card mr-6 text-2xl"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-span-4 p-4 pt-12" id="content">
+            
+          <div class="fixed bottom-0 right-0 z-50  p-4">
+            <div id="success-notification" class="bg-green-500 text-white py-2 px-4 rounded-md flex items-center justify-between hidden">
+              <span id="success-message">Success! Your action was completed.</span>
+              <button id="success-close-notification" class="text-white">
+                <svg class="fill-current h-6 w-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 8.586l3.293-3.293a1 1 0 0 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 1 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 1 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 1.414-1.414L10 8.586z"/></svg>
+              </button>
+            </div>
+            <div id="fail-notification" class="bg-rose-500 text-white py-2 px-4 rounded-md flex items-center justify-between hidden mt-2">
+              <span id="fail-message">Success! Your action was completed.</span>
+              <button id="fail-close-notification" class="text-white">
+                <svg class="fill-current h-6 w-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 8.586l3.293-3.293a1 1 0 0 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 1 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 1 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 1.414-1.414L10 8.586z"/></svg>
+              </button>
+            </div>
+          </div>
+          
+
+            <div id="account-apps" class="hidden">
+                <!-- Main content -->
+                <h1 class="text-3xl font-bold mb-4" >Your Apps</h1>
+                <hr class="border border-gray-300">
+
+                <div class="py-6 px-4 sm:px-6 lg:px-8">
+                  <button class="mt-8 border border-gray-800 rounded pt-2 pb-2 pl-4 pr-4" id="create-app-btn"><i class="bi bi-plus-circle-dotted"></i> Create App</button>
+                  <form class="app-form mt-12 hidden" id="create-app-form">
+                      <input type="text" name="" id="appname" placeholder="Enter app name" class="w-9/12 md:w-4/12 px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                      <button class="h-10 bg-gray-800 text-white p-2 rounded" onclick="createApp()">Create</button>
+                  </form>
+                </div>
+                
+
+                
+                <div id="apps-wrapper" class="flex flex-wrap justify-center mt-20 gap-6 px-4 sm:px-6 md:px-8 lg:px-12">
+                  {% if apps %}
+                    {% for app in apps %}
+                      <div class="max-w-sm w-full bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="px-4 py-2">
+                          <h1 class="text-gray-900 font-bold text-2xl">{{app.name}}</h1>
+                          <p class="text-gray-600 mt-2 text-sm">Description of App 1.</p>
+                        </div>
+                        <div class="px-4 py-2">
+                          <a href="#" class="block text-center text-white bg-gray-800 py-2 px-4 rounded hover:bg-gray-700">View</a>
+                        </div>
+                      </div>
+                    {% endfor %}    
+                  {% else %}
+                  <p class="text-2xl text-gray-600 mt-40 text-center" id="no-app">There's no apps to show!</p>
+                {% endif %}
+                </div>
+               
+
+
+            </div>
+            
+            <div id="account-tokens" class="hidden">
+                <!-- Main content -->
+                <h1 class="text-3xl font-bold mb-4">Tokens</h1>
+                <hr class="border border-gray-300">
+                <div class="tokens pt-8 py-6 px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-2xl ">API Tokens</h1>
+                    <p class="text-gray-600 mt-4">Here you will find the API key that you can use to authenticate your API requests. Please keep this key secret,
+                         as anyone with access to it will be able to use your account. If you suspect that your key has been compromised, 
+                         please generate a new key in your account settings. Thank you for using our service!</p>
+
+                    <div class="token-list mt-8">
+                        <label for="" class="">API Key</label>
+                        <div class="relative w-12/12 mt-4">
+                            <input type="password" id="api-key-value" placeholder="API Key" value="{{user.api_key}}" class="w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <button type="button" class="text-gray-500 focus:outline-none mr-2" onclick="togglePassword()">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="text-gray-500 focus:outline-none" data-clipboard-text="" onclick="copyPassword()">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                              </div>                               
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+
+            <div id="account-billing" class="hidden">
+              <!-- Main content -->
+              <h1 class="text-3xl font-bold mb-4">Billing</h1>
+              <hr class="border border-gray-300">
+
+
+
+
+              <div class="bg-white py-6 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
+                  <div class="flex flex-col lg:flex-row lg:justify-between">
+                    <h2 class="text-lg font-medium text-gray-900">Billing Information</h2>
+                    {% if card %}
+                    <div class="mt-3 lg:mt-0 flex">
+                        <button class="bg-white border border-gray-300 rounded-md py-2 px-4 text-sm font-medium text-gray-700 hover:text-gray-500" id="popup-btn" onclick="poupUpdateForm()">Update Card</button>
+                        <button class="bg-white border border-gray-300 rounded-md py-2 px-4 text-sm font-medium text-red-600 hover:text-red-500 ml-3" onclick="deleteCard()">Delete Card</button>
+                    </div>
+                    {% endif %}
+                  </div>
+                    
+
+                  <form action="#" method="POST" onsubmit="sendUpdateCardForm(event)"  id="popup" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-12/12 md:w-10/12 lg:w-4/12 mx-auto hidden">
+                    <div class="mb-4">
+                      <label class="block text-gray-700 font-bold mb-2" for="card_number">
+                        Card Number
+                      </label>
+                      <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="card_number" type="text" placeholder="**** **** **** ****">
+                    </div>
+                    <div class="mb-4">
+                      <label class="block text-gray-700 font-bold mb-2" for="expiration_date">
+                        Expiration Date
+                      </label>
+                      <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="expiration_date" type="text" placeholder="MM/YY">
+                    </div>
+                    <div class="mb-4">
+                      <label class="block text-gray-700 font-bold mb-2" for="cvc">
+                        CVC
+                      </label>
+                      <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="cvc" type="text" placeholder="***">
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <button class="bg-gray-800 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        Update Card
+                      </button>
+                    </div>
+                  </form>
+                
+                  {% if card %}
+                  <div class="mt-6">
+                    <div class="max-w-4xl mx-auto">
+                      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div class="px-4 py-5 sm:px-6">
+                          <h3 class="text-lg leading-6 font-medium text-gray-900">Card Information</h3>
+                          <p class="mt-1 max-w-2xl text-sm text-gray-500">This is the card on file for your account. To update or delete the card, please use the buttons above.</p>
+                        </div>
+                        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+                          <dl class="sm:divide-y sm:divide-gray-200">
+                            <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt class="text-sm font-medium text-gray-500">Card Type</dt>
+                              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{card.brand}}</dd>
+                            </div>
+                            <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt class="text-sm font-medium text-gray-500">Card Number</dt>
+                              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">**** **** **** {{card.last4}}</dd>
+                            </div>
+                            <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt class="text-sm font-medium text-gray-500">Expiration Date</dt>
+                              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{card.exp_month}}/{{card.exp_year}}</dd>
+                            </div>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% else %}
+                  <p class="text-2xl text-gray-600 mt-40 text-center" id="no-app">There's no active card!</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="w-full mt-12 py-6 px-4 sm:px-6 lg:px-8">
+
+                <h2 class="text-lg font-medium text-gray-900">Payment history</h2>
+                <div class="w-full overflow-scroll md:overflow-hidden scrollbar-none">
+                  <table class="min-w-full divide-y divide-gray-200 mt-6">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      {% if payment_historys %}
+                        {% for payment_history in payment_historys %}
+                          <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{payment_history.date}}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{payment_history.amount}}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Monthly subscription</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{payment_history.status}}</td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr>
+                          <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No Payment History Available !</td>
+                        </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+                
+              </div>
+            
+
+
+            </div>
+
+            <div id="account-settings" class="">
+                <!-- Main content -->
+                <h1 class="text-3xl font-bold mb-4">General settings</h1>
+                <hr class="border border-gray-300">
+                <div class="profile-info mt-4 py-6 px-4 sm:px-6 lg:px-8">
+                    <h1 class="text-2xl font-bold">Profile Information</h1>
+                    <form class="w-12/12 md:w-5/12 mt-4" action="#">
+                        <div class="block md:flex justify-between">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-bold mb-2" for="first_name">
+                                  First Name
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="first_name" type="text" value="{{User.first_name}}" placeholder="Enter your first name">
+                              </div>
+                              <div class="mb-4">
+                                <label class="block text-gray-700 font-bold mb-2" for="last_name">
+                                  Last Name
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="last_name" type="text" value="{{User.last_name}}" placeholder="Enter your last name">
+                              </div>  
+                        </div>
+                        
+                        <div class="mb-4">
+                          <label class="block text-gray-700 font-bold mb-2" for="email">
+                            Email
+                          </label>
+                          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" value="{{User.email}}" placeholder="Enter your email address">
+                        </div>
+                        <div class="flex items-center justify-between">
+                          <button class="bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onclick="updateProfile()">
+                            Update Profile
+                          </button>
+                        </div>
+                    </form>
+                      
+                </div>
+                
+                <div class="mt-40 py-6 px-4 sm:px-6 lg:px-8">
+                    <a class="mt-40 border border-red-500 text-red-500 rounded px-4 py-2 transition duration-500 ease select-none hover:text-white hover:bg-red-500 focus:outline-none focus:shadow-outline">
+                        Delete Account
+                    </a>
+                </div>
+            </div>
+
+            <div id="account-usage" class="hidden">
+                <!-- Main content -->
+                <h1 class="text-2xl font-bold mb-4">Account Usage</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                </div>
+            </div>
+
+        </div>
+        
+  </div>
+
+  <script src="{% static 'js/dashboard.js' %}"></script>
+
+{% endblock body %}

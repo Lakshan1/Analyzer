@@ -1,0 +1,60 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Analyzer | Signin{% endblock title %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block body %}
+
+<div class="w-12/12 mx-0 md:mx-16 lg:mx-64">
+    <div class="container grid place-items-center h-screen">
+        <div class="h-fit bg-white w-10/12 md:w-96 lg:w-96 pt-4 pb-4 shadow-md">
+            <h1 class="text-2xl text-center uppercase font-bold text-gray-700 mb-2">welcome back!</h1>
+            <hr class="border-solid border-gray-300">
+            <form class="grid place-items-center w-full pt-12 pb-12" action="" method="POST">
+                {% csrf_token %}
+                <input class="bg-gray-200 border border-gray-300 h-10 w-10/12 md:w-80 lg:w-80 pl-4 pr-4" type="text" name="username" id="" placeholder="Username"><br>
+                <input class="bg-gray-200 border border-gray-300 h-10 w-10/12 md:w-80 lg:w-80 pl-4 pr-4" type="password" name="password" id="" placeholder="Password">
+                <input class="bg-gray-800 mt-6 w-10/12 md:w-80 lg:w-80 h-10 text-white uppercase" type="submit" value="Login">
+                {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="error mt-4 text-rose-800 text-center bg-rose-300 pl-4 pr-4 pt-1 pb-1 w-10/12 md:w-80 lg:w-80">
+                            {{message}}
+                        </div>
+                    {% elif messages.tags == 'success' %}
+                        <div class="error mt-4 text-green-800 text-center bg-green-300 pl-4 pr-4 pt-1 pb-1 w-10/12 md:w-80 lg:w-80">
+                            {{message}}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+        {% endif %}
+            </form> 
+            <hr class="border-solid border-gray-300">
+            <div class="signin-footer" class="">
+                <a href="{% url 'signup' %}" class="text-1xl text-indigo-800 float-left ml-4 mt-2">Don't have an account?</a>
+                <a href="#" class="text-1xl text-gray-500 float-right mr-4 mt-2">Forgot Password?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    handburger_menu = document.getElementById("handburger-menu")
+    mobile_menu = document.getElementById("mobile-menu")
+    close_btn = document.getElementById("close-btn")
+
+
+    handburger_menu.addEventListener("click", function (){
+        mobile_menu.style.display = "block"
+    })
+
+   close_btn.addEventListener("click", function (){
+        mobile_menu.style.display = "none"
+    })
+
+</script>
+
+{% endblock body %}

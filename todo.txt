@@ -1,0 +1,12 @@
+send email on signup
+send email on subscrition success
+send email on subscrition update
+send email on monthly payment success
+send email on monthly payment failed
+send email on subscription deleted
+
+
+
+need to create subscription object on signup 
+meed to get instead of create in event success
+
